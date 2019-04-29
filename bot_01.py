@@ -34,15 +34,32 @@ def getRates(bot,update):
 			exchange_rates['USD'],
 			exchange_rates['EUR']))
 
+def callback_hour(bot, job):
+	f = open('user_id.txt')
+	chat_id = f.read()
+	f.close()
+	textHTML = getTextHTML('https://www.audit-it.ru/currency/')
+	exchange_rates = getExchangeRates(textHTML)
+	text = '''Exchange rates:\nUSD = {0}\nEUR = {1}'''.format(
+			exchange_rates['USD'],
+			exchange_rates['EUR'])
+	bot.send_message(chat_id=chat_id,
+					 text=text)
 
 f = open('bot_01_token.txt')
 token = f.read()
+f.close()
+
 updater = Updater(token)
 
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
 updater.dispatcher.add_handler(CommandHandler('gr', getRates))
+# updater.dispatcher.add_handler(CommandHandler(''))
 
+job_queue = updater.job_queue
+
+job_hour = job_queue.run_repeating(callback_hour,
+									 interval = 3600,
+									 first = 0)
 updater.start_polling()
 updater.idle()
-
-# import pdb; pdb.set_trace()
